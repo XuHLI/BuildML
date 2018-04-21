@@ -51,16 +51,29 @@ def distance(x,y):
 	return np.dot(x-y,x-y)
 
 # classifier
-def nn_classify(training_set,training_label,newexample):
+def nn_classify(training_set,training_label,newexample, k=1):
 	dist = np.array([distance(t,newexample) for t in training_set])
+	classes = np.unique(training_label)
 
-	nearest = dist.argmin()
+	# print(k)
 
-	return training_label[nearest]
+	if len(dist)<k:
+		
+		return print('Error: not sufficient data')
+	else:
+		dist_sorted_index = dist.argsort()
+		nearest_k = dist_sorted_index[:k]
+			
+			
+		nearest = np.array([np.sum(training_label[nearest_k] == c) for 
+			c in classes]).argmax()
 
-label = nn_classify(features[1:10],labels[1:10],features[15])
 
-print(label)
+		return classes[nearest]
+
+label = nn_classify(features[1:10],labels[1:10],features[15],k=5)
+
+# print(label)
 
 # normalization of the features: Z-score
 features -= features.mean(axis=0)
@@ -74,7 +87,7 @@ num_fold = kf.get_n_splits(features)
 
 acc = 0
 for train, test in kf.split(features,labels):
-	label_classify = np.array([nn_classify(features[train],labels[train],ex)
+	label_classify = np.array([nn_classify(features[train],labels[train],ex,k=5)
 		for ex in features[test]])
 	label_test = labels[test]
 	acc += np.mean(label_classify==label_test)
